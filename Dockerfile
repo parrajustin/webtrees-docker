@@ -3,6 +3,7 @@ ARG PHP_VERSION=8.1
 FROM docker.io/library/php:$PHP_VERSION-apache
 
 ENV WEBTREES_HOME="/var/www/webtrees"
+ENV COCKROACH_CERT="https://cockroachlabs.cloud/clusters/xxx/cert"
 WORKDIR $WEBTREES_HOME
 
 # install pre-reqs
@@ -36,6 +37,8 @@ RUN curl -s -L https://github.com/fisharebest/webtrees/releases/download/2.1.15/
  && chown -R www-data:www-data ./ \
  && perl -0777 -i -pe "s/private\s+function\s+fetchLatestVersion[\S\s]+?{[\S\s]+?{[\S\s]+?{[\S\s]+?{[\S\s]+?}[\S\s]+?}[\S\s]+?}[\S\s]+?}[\S\s]+?}/private function fetchLatestVersion(): string { return Site::getPreference('LATEST_WT_VERSION'); }/" app/Services/UpgradeService.php \
  && rm -f vendor/egulias/email-validator/src/Validation/MessageIDValidation.php
+
+RUN curl --create-dirs -o $HOME/.postgresql/root.crt -O $COCKROACH_CERT
 
 # enable apache modules
 RUN a2enmod rewrite && a2enmod ssl && rm -rf /var/www/html
